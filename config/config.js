@@ -2,7 +2,7 @@
 
 module.exports = {
     auth: {
-      secret: 'Little secret, big responsability...'
+      secret: 'Little secret, big responsibility...'
     },
     database: {
       local: 'mongodb://localhost:27017/meanauthapp',

@@ -1,30 +1,26 @@
 const express = require('express');
 const path = require('path'); //it's a core module so no need to install
-const cors = require('cors'); //Cross Origin Resource Sharing
+const cors = require('cors'); //Cross Origin Resource Sharing, allows to send request from different domain name
 const bodyParser = require('body-parser'); //parse incoming request body. like read data from submited form
 const mongoose = require('./db/mongoose');
 const passport = require('passport');
-const passportJwt = require('passport-jwt');
-const JwtStrategy = require('passport-jwt').Strategy;
-const ExtractJwt = require('passport-jwt').ExtractJwt;
 const config = require('./config/config');
+
 const users = require('./routes/users'); //all requests to localhost/users/xyz will go here
-
-
 
 const app = express();
 const port = 3000;
 
-//allows to send request from different domain name
 app.use(cors());
 //Set static folder. to place all the client side files
 app.use(express.static(path.join(__dirname,'public')));
 app.use(bodyParser.json());
 
-//Passport middleware
+//Setup Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
 require('./config/passport')(passport);
+
 //Routes
 app.get('/', (req,res) => {
     res.send('invalid response');

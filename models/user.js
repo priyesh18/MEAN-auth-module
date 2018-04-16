@@ -1,36 +1,20 @@
 const mongoose = require('mongoose');
+var Schema = mongoose.Schema;
 const validator = require('validator');
+const bcrypt = require('bcryptjs');
 //telling mongoose to use promise
-//mongoose.Promise = global.Promise;
+mongoose.Promise = global.Promise;
 //User Schema
-// var UserSchema = new mongoose.Schema({
-//     name: {
-//         type: String
-//     },
-//     email: {
-//         type: String,
-//         required: true
-//     },
-//     username: {
-//         type: String,
-//         required: true
-//     },
-//     password: {
-//         type: String,
-//         required: true
-//     }
-// });
-//module.exports allows you to call the function from other file.
-        //To use User var from outside
-module.exports = mongoose.model('User',{
-    name: {
-        type: String
+var UserSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        required: true
     },
     email: {
         type: String,
         required: true,
         trim: true,
-        minlength:1,
+        minlength: 1,
         unique: true,
         validate: {
             validator: validator.isEmail,
@@ -51,23 +35,50 @@ module.exports = mongoose.model('User',{
             required: true
         }
     }]
-}); 
+});
 
-// module.exports.getUserById = (id, callback) => {
-//     User.findById(id,callback);
-// }
-// module.exports.getUserByUsername = (username, callback) => {
-//     const query = { username: username}
-//     User.findOne(query,callback);
-// }
-// module.exports.AddUser = (newUser, callback) => {
-//     bcrypt.genSalt(10, (err, salt) => {
-//         bcrypt.hash(newUser.password, salt, (err, hash) => {
-//             if(err) throw err;
-//             newUser.password = hash;
-//             newUser.save(callback);
-//         });
-//     });
-// }
+UserSchema.pre('save', function (next) {
+    var user = this;
+    if (this.isModified('password') || this.isNew) {
 
+        bcrypt.genSalt()
+            .then((salt) => {
+                //console.log(salt);
+                bcrypt.hash(user.password, salt)
+                    .then((hash) => {
+                        //console.log(hash);
+                        user.password = hash;
+                        next();
+                    })
+                    .catch(e => next(e))
+            })
+            .catch((e) => {
+                next(e);
+            })
+
+    } 
+    else {
+         next();
+    }
+});
+
+UserSchema.methods.comparePassword = function (passw) {
+    return bcrypt.compare(passw, this.password).then((result) => {
+        return result;
+    })
+    .catch(e => e);
+    
+    // function (err, isMatch) {
+    //     if (err) {
+    //         return cb(err);
+    //     }
+    //     cb(null, isMatch);
+    // });
+};
+
+
+//module.exports allows you to call the function from other file.
+//To use User var from outside
+
+module.exports = mongoose.model('User', UserSchema);
 
